@@ -9,7 +9,7 @@ class Message(models.Model):
     message_content = models.TextField()
     date_added = models.DateTimeField(auto_now_add=True)
     profile_pic = models.ImageField()
-
+    file = models.FileField(upload_to='uploads/', null=True, blank=True)  # New field for file uploads
     class Meta:
         ordering = ('date_added', )
 
