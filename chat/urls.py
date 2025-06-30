@@ -3,7 +3,9 @@ from . import views as chat_views
 
 urlpatterns = [
     # Home page with room join form and list of private chats
-    path('', chat_views.chat_home, name='chat_home'),
+    path('', chat_views.chat_home, name='chat-home'),
+    path("ajax/user-search/", chat_views.ajax_user_search, name="ajax-user-search"),
+
 
     # Public Chat Room
     path('<str:room_name>/', chat_views.chat_room, name='chat_room'),

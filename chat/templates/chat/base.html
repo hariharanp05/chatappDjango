@@ -34,7 +34,7 @@
     <header class="site-header">
       <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
         <div class="container">
-          <a class="navbar-brand mr-4" href="{% url 'chat_home' %}"
+          <a class="navbar-brand mr-4" href="{% url 'chat-home' %}"
             >Django Chat App</a
           >
           <button
@@ -50,7 +50,7 @@
           </button>
           <div class="collapse navbar-collapse" id="navbarToggle">
             <div class="navbar-nav mr-auto">
-              <a class="nav-item nav-link" href="{% url 'chat_home' %}">Home</a>
+              <a class="nav-item nav-link" href="{% url 'chat-home' %}">Home</a>
             </div>
             <div class="navbar-nav">
               {% if user.is_authenticated %}
@@ -125,17 +125,26 @@
           <div class="content-section mt-4">
             <h3>Messages</h3>
             <p class="text-muted">Your private chats</p>
-            <ul class="list-group">
-    {% for user in private_chat_users %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <a href="{% url 'private_chat_room' user.id %}">
-          {{ user.username }}
-        </a>
-      </li>
-    {% empty %}
-      <li class="list-group-item text-muted">No accepted private messages yet.</li>
-    {% endfor %}
-  </ul>
+            <div class="private-chat-list">
+              <ul class="list-group mb-0">
+                {% for user in private_chat_users %}
+                <li
+                  class="list-group-item private-chat-user d-flex justify-content-between align-items-center {% if selected_user and selected_user.id == user.id %}active{% endif %}"
+                >
+                  <a href="{% url 'private_chat_room' user.id %}">
+                    {{ user.username }}
+                  </a>
+                  {% if user.has_unread %}
+                  <span class="badge badge-danger ml-2">New</span>
+                  {% endif %}
+                </li>
+                {% empty %}
+                <li class="list-group-item text-muted">
+                  No accepted private messages yet.
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
           </div>
         </div>
       </div>

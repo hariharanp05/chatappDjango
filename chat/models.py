@@ -72,6 +72,8 @@ class DirectMessage(models.Model):
     file = models.FileField(upload_to='uploads/dm/', null=True, blank=True)
     profile_pic = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
+    
+    is_read = models.BooleanField(default=False)  # <--- Add this line
 
     class Meta:
         ordering = ('timestamp',)

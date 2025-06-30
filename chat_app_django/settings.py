@@ -70,6 +70,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'chat.context_processors.public_rooms',
                 'chat.context_processors.message_notifications',
+                'chat.context_processors.private_chat_users'
             ],
         },
     },

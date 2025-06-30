@@ -3,6 +3,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib.auth.models import User
+from django.http import JsonResponse
+
 
 from .forms import RoomForm, MessageForm
 from .models import (
@@ -29,10 +31,28 @@ def chat_home(request):
         is_accepted=True
     )
 
-    private_chat_users = [
-        req.to_user if req.from_user == request.user else req.from_user
-        for req in accepted_requests
-    ]
+    private_chat_users = []
+    for req in accepted_requests:
+        other_user = req.to_user if req.from_user == request.user else req.from_user
+
+        # Find the DM room
+        room = DirectMessageRoom.objects.filter(
+            Q(user1=request.user, user2=other_user) |
+            Q(user1=other_user, user2=request.user)
+        ).first()
+
+        # Check for unread messages from the other user
+        has_unread = False
+        if room:
+            has_unread = DirectMessage.objects.filter(
+                room=room,
+                sender=other_user,
+                is_read=False
+            ).exists()
+
+        # Dynamically attach attribute
+        other_user.has_unread = has_unread
+        private_chat_users.append(other_user)
 
     return render(request, 'chat/index.html', {
         'form': form,
@@ -92,7 +112,7 @@ def accept_message_request(request, request_id):
     DirectMessageRoom.objects.get_or_create(user1=user1, user2=user2)
 
     messages.success(request, "Message request accepted.")
-    return redirect('direct_messages')
+    return redirect('chat-home')
 
 # BLOCK / UNBLOCK USERS
 
@@ -149,6 +169,8 @@ def private_chat_room(request, user_id):
         return redirect('user_profile', username=other_user.username)
 
     messages_qs = DirectMessage.objects.filter(room=room).order_by('timestamp')
+
+    messages_qs.filter(sender=other_user, is_read=False).update(is_read=True)
 
     if request.method == 'POST':
         form = MessageForm(request.POST, request.FILES)
@@ -209,3 +231,11 @@ def notifications(request):
 def blocked_users(request):
     blocked = BlockedUser.objects.filter(blocker=request.user)
     return render(request, 'chat/blocked_users.html', {'blocked_users': blocked})
+
+
+@login_required
+def ajax_user_search(request):
+    query = request.GET.get("q", "")
+    users = User.objects.filter(username__icontains=query)[:10]
+    data = {"results": [{"username": user.username} for user in users]}
+    return JsonResponse(data)

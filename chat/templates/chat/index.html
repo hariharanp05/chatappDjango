@@ -22,17 +22,36 @@
   <hr />
 
   <!-- ✅ Private Messages Section -->
-  <h4 class="mt-4">📬 Messages</h4>
-  <ul class="list-group">
-    {% for user in private_chat_users %}
-      <li class="list-group-item d-flex justify-content-between align-items-center">
-        <a href="{% url 'private_chat_room' user.id %}">
-          {{ user.username }}
-        </a>
-      </li>
-    {% empty %}
-      <li class="list-group-item text-muted">No accepted private messages yet.</li>
-    {% endfor %}
-  </ul>
-</div>
+  <input type="text" id="user-search" placeholder="Search users..." autocomplete="off">
+<div id="search-results" style="border: 1px solid #ccc; display:none; max-height: 200px; overflow-y: auto;"></div>
+
+<script>
+document.getElementById("user-search").addEventListener("keyup", function () {
+    let query = this.value;
+    let resultsDiv = document.getElementById("search-results");
+
+    if (query.length > 0) {
+        fetch(`/ajax/user-search/?q=${query}`)
+        .then(response => response.json())
+        .then(data => {
+            let results = data.results;
+            resultsDiv.innerHTML = "";
+            resultsDiv.style.display = results.length ? "block" : "none";
+            results.forEach(user => {
+                let a = document.createElement("a");
+                a.href = `/user/${user.username}/`;
+                a.textContent = user.username;
+                a.style.display = "block";
+                a.style.padding = "5px";
+                resultsDiv.appendChild(a);
+            });
+        });
+    } else {
+        resultsDiv.style.display = "none";
+        resultsDiv.innerHTML = "";
+    }
+});
+</script>
+
+
 {% endblock content %}

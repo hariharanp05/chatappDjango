@@ -84,4 +84,52 @@ body {
   }
 
   
-  
+
+/* Private Chat User List Styling */
+
+.private-chat-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+}
+
+.private-chat-list::-webkit-scrollbar {
+  width: 6px;
+}
+.private-chat-list::-webkit-scrollbar-thumb {
+  background-color: #bbb;
+  border-radius: 10px;
+}
+.private-chat-list::-webkit-scrollbar-thumb:hover {
+  background-color: #999;
+}
+
+.private-chat-user {
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.private-chat-user:hover {
+  background-color: #f2f2f2;
+}
+.private-chat-user a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+}
+.private-chat-user.active,
+.private-chat-user.active a {
+  background-color: #343a40 !important;
+  color: white !important;
+}
+
+
+
+.badge-danger {
+  background-color: #dc3545;
+  font-size: 0.75rem;
+  padding: 5px 8px;
+  border-radius: 12px;
+}
