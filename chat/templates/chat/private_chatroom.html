@@ -1,0 +1,240 @@
+{% extends 'chat/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+  .chat-container {
+    max-width: 800px;
+    margin: auto;
+    height: 85vh;
+    display: flex;
+    flex-direction: column;
+    border-radius: 10px;
+    background: #fdfdfd;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    animation: fadeInUp 0.5s ease;
+  }
+
+  .chat-header {
+    background: #006eff;
+    color: white;
+    padding: 15px;
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .chat-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: #f0f4f8;
+    scroll-behavior: smooth;
+  }
+
+  .message {
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    border-radius: 15px;
+    max-width: 70%;
+    position: relative;
+    animation: slideIn 0.3s ease;
+  }
+
+  .message.sender {
+    background: #006eff;
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 0;
+  }
+
+  .message.receiver {
+    background: #e4e4e4;
+    color: black;
+    align-self: flex-start;
+    border-bottom-left-radius: 0;
+  }
+
+  .chat-input-section {
+    display: flex;
+    padding: 10px;
+    background: white;
+    border-top: 1px solid #ccc;
+  }
+
+  .chat-input-section input[type="text"] {
+    flex: 1;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    margin-right: 10px;
+    outline: none;
+  }
+
+  .chat-input-section input[type="file"] {
+    display: none;
+  }
+
+  .chat-input-section label {
+    cursor: pointer;
+    font-size: 20px;
+    margin-right: 8px;
+    color: #333;
+  }
+
+  .chat-input-section button {
+    background: #006eff;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 20px;
+    transition: background 0.3s ease;
+  }
+
+  .chat-input-section button:hover {
+    background: #004dbf;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+
+<div class="chat-container">
+  <div class="chat-header">
+    {% comment %} <img src="{{ other_user.profile.profile_picture.url }}" alt="Avatar" width="35" height="35" style="border-radius: 50%;"> {% endcomment %}
+    Chat with {{ other_user.username }}
+  </div>
+
+  <div id="chat-log" class="chat-messages">
+    {% for msg in db_messages %}
+      <div class="message {% if msg.user.id == request.user.id %}sender{% else %}receiver{% endif %}">
+        <p style="margin: 0;">{{ msg.message_content }}</p>
+        {% if msg.file %}
+          <p>
+            <a href="{{ msg.file.url }}" target="_blank" style="color: {% if msg.user.id == request.user.id %}lightyellow{% else %}blue{% endif %};">
+              download Now{% comment %} {{ msg.file.name|cut:"uploads/" }} {% endcomment %}
+            </a>
+          </p>
+        {% endif %}
+        <small style="opacity: 0.7;">{{ msg.timestamp|date:"H:i" }}</small>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="chat-input-section">
+    <input type="text" id="chat-message-input" placeholder="Type a message...">
+    <label for="file-upload" title="Attach a file">📎</label>
+    <input type="file" id="file-upload" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar">
+    <button id="chat-message-submit">Send</button>
+  </div>
+</div>
+
+<!-- Hidden data for JavaScript -->
+{{ room_name|json_script:"room-name" }}
+{{ request.user.username|json_script:"user-name" }}
+{{ request.user.profile.profile_picture.url|json_script:"profile-pic" }}
+
+<script>
+  const roomName = JSON.parse(document.getElementById('room-name').textContent);
+  const userName = JSON.parse(document.getElementById('user-name').textContent);
+  const profilePic = JSON.parse(document.getElementById('profile-pic').textContent);
+
+  const chatSocket = new WebSocket(
+    (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws/private/" + roomName + "/"
+  );
+
+  chatSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    const chatLog = document.getElementById("chat-log");
+
+    const msgDiv = document.createElement("div");
+    msgDiv.classList.add("message");
+    msgDiv.classList.add(data.username === userName ? "sender" : "receiver");
+
+    msgDiv.innerHTML = `<p>${data.message}</p>`;
+
+    if (data.file_url) {
+      const fileName = data.file_url.split('/').pop();
+      const fileColor = data.username === userName ? 'lightyellow' : 'blue';
+      msgDiv.innerHTML += `<p><a href="${data.file_url}" target="_blank" style="color: ${fileColor};">📎 ${fileName}</a></p>`;
+    }
+
+    const now = new Date();
+    const timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+    msgDiv.innerHTML += `<small style="opacity: 0.7;">${timeStr}</small>`;
+
+    chatLog.appendChild(msgDiv);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  };
+
+  chatSocket.onclose = function(e) {
+    console.error('Chat socket closed unexpectedly.');
+  };
+
+  document.getElementById("chat-message-submit").onclick = sendMessage;
+  document.getElementById("chat-message-input").addEventListener("keypress", function (e) {
+    if (e.key === "Enter") sendMessage();
+  });
+
+  function sendMessage() {
+    const input = document.getElementById("chat-message-input");
+    const fileInput = document.getElementById("file-upload");
+    const message = input.value.trim();
+
+    if (!message && !fileInput.files.length) return;
+
+    if (fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function () {
+        chatSocket.send(JSON.stringify({
+          message: message,
+          username: userName,
+          profile_pic: profilePic,
+          room: roomName,
+          file: {
+            name: file.name,
+            data: reader.result
+          }
+        }));
+        input.value = '';
+        fileInput.value = '';
+      };
+
+      reader.readAsDataURL(file);
+    } else {
+      chatSocket.send(JSON.stringify({
+        message: message,
+        username: userName,
+        profile_pic: profilePic,
+        room: roomName,
+        file: null
+      }));
+      input.value = '';
+    }
+  }
+</script>
+{% endblock %}

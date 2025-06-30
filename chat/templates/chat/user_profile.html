@@ -1,0 +1,52 @@
+{% extends "chat/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow p-4">
+        <h2 class="text-center mb-3">{{ profile_user.username }}'s Profile</h2>
+        <hr>
+
+        {% if blocked_by %}
+            <div class="alert alert-danger text-center">
+                You are <strong>blocked</strong> by this user.
+            </div>
+        {% else %}
+            <div class="d-flex justify-content-center gap-3 mt-3">
+
+                {% if profile_user == user %}
+                    <p class="text-muted">This is your profile.</p>
+                {% else %}
+                    {% if is_blocked %}
+                        <a href="{% url 'unblock_user' profile_user.id %}" class="btn btn-warning">
+                            Unblock {{ profile_user.username }}
+                        </a>
+                    {% else %}
+                        <a href="{% url 'block_user' profile_user.id %}" class="btn btn-danger">
+                            Block {{ profile_user.username }}
+                        </a>
+                    {% endif %}
+
+                    {% if dm_room_exists %}
+                        <a href="{% url 'private_chat_room' profile_user.id %}" class="btn btn-success">
+                            Open Chat
+                        </a>
+                    {% elif request_received %}
+                        <a href="{% url 'accept_message_request' request_received.id %}" class="btn btn-primary">
+                            Accept Message Request
+                        </a>
+                    {% elif request_sent %}
+                        <button class="btn btn-secondary" disabled>
+                            Request Sent
+                        </button>
+                    {% else %}
+                        <a href="{% url 'send_message_request' profile_user.id %}" class="btn btn-outline-primary">
+                            Send Message Request
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

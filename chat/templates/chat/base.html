@@ -1,92 +1,218 @@
 {% load static %}
 <!DOCTYPE html>
 <html>
-<head>
-
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-
-    <link rel="stylesheet" type="text/css" href="{% static 'chat/main.css' %}">
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'chat/main.css' %}"
+    />
 
     {% if title %}
-        <title>Django Chat App - {{ title }}</title>
+    <title>Django Chat App - {{ title }}</title>
     {% else %}
-        <title>Django Chat App</title>
+    <title>Django Chat App</title>
     {% endif %}
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+  </head>
+  <body>
     <header class="site-header">
       <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
         <div class="container">
-          <a class="navbar-brand mr-4" href="{% url 'chat-home' %}">Django Chat App</a>
-          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
+          <a class="navbar-brand mr-4" href="{% url 'chat_home' %}"
+            >Django Chat App</a
+          >
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-toggle="collapse"
+            data-target="#navbarToggle"
+            aria-controls="navbarToggle"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
           </button>
           <div class="collapse navbar-collapse" id="navbarToggle">
             <div class="navbar-nav mr-auto">
-              <a class="nav-item nav-link" href="{% url 'chat-home' %}">Home</a>
+              <a class="nav-item nav-link" href="{% url 'chat_home' %}">Home</a>
             </div>
-            <!-- Navbar Right Side -->
             <div class="navbar-nav">
               {% if user.is_authenticated %}
-              <img width="50px" class="rounded-circle" style="max-height: 40px; max-width: 40px;" src="{{user.profile.image.url}}">
-                <a class="nav-item nav-link" href="{% url 'profile' %}"> Profile</a>
-                <a class="nav-item nav-link" href="{% url 'logout' %}">Logout</a>
+              <img
+                width="50px"
+                class="rounded-circle"
+                style="max-height: 40px; max-width: 40px"
+                src="{{ user.profile.image.url }}"
+              />
+              <a class="nav-item nav-link" href="{% url 'profile' %}"
+                >Profile</a
+              >
+              <!-- Notification Icon -->
+              <a href="#" id="notification-icon">🔔</a>
+
+              <a class="nav-item nav-link" href="{% url 'direct_messages' %}"
+                >Direct Messages</a
+              >
+              <a class="nav-item nav-link" href="{% url 'blocked_users' %}"
+                >Blocked Users</a
+              >
+              <a class="nav-item nav-link" href="{% url 'logout' %}">Logout</a>
               {% else %}
-                <a class="nav-item nav-link" href="{% url 'login' %}">Login</a>
-                <a class="nav-item nav-link" href="{% url 'register' %}">Register</a>
+              <a class="nav-item nav-link" href="{% url 'login' %}">Login</a>
+              <a class="nav-item nav-link" href="{% url 'register' %}"
+                >Register</a
+              >
               {% endif %}
             </div>
           </div>
         </div>
       </nav>
     </header>
-    <main role="main" class="container">
+    <main role="main" class="container" style="margin-top: 80px">
       <div class="row">
         <div class="col-md-8">
-          {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                </div>
-            {% endfor %}  
-          {% endif %}
-          {% block content %}{% endblock %}
+          {% if messages %} {% for message in messages %}
+          <div
+            class="alert alert-{{ message.tags }} alert-dismissible fade show"
+            role="alert"
+          >
+            {{ message }}
+            <button
+              type="button"
+              class="close"
+              data-dismiss="alert"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% endfor %} {% endif %} {% block content %}{% endblock %}
         </div>
         <div class="col-md-4">
           <div class="content-section">
             <h3>Public Servers</h3>
-            <p class='text-muted'>Explore our public servers! DM admin for more servers!
-              <ul class="list-group">
-                {% if rooms is None %}
-                <li class="list-group-item list-group-item-light"> No public servers available ATM </li>
-                {% else %}
-                {% for room in rooms %}
-                <li class="list-group-item list-group-item-light">
-                    <a href="{% url 'chat_room' room.slug %}">
-                        {{room.name}}
-                    </a> 
-                </li>
-                {% endfor %}
-                {% endif %}
-              </ul>
+            <p class="text-muted">
+              Explore our public servers! DM admin for more servers!
             </p>
+            <ul class="list-group">
+              {% if rooms is None %}
+              <li class="list-group-item list-group-item-light">
+                No public servers available ATM
+              </li>
+              {% else %} {% for room in rooms %}
+              <li class="list-group-item list-group-item-light">
+                <a href="{% url 'chat_room' room.slug %}">{{ room.name }}</a>
+              </li>
+              {% endfor %} {% endif %}
+            </ul>
+          </div>
+          <div class="content-section mt-4">
+            <h3>Messages</h3>
+            <p class="text-muted">Your private chats</p>
+            <ul class="list-group">
+    {% for user in private_chat_users %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <a href="{% url 'private_chat_room' user.id %}">
+          {{ user.username }}
+        </a>
+      </li>
+    {% empty %}
+      <li class="list-group-item text-muted">No accepted private messages yet.</li>
+    {% endfor %}
+  </ul>
           </div>
         </div>
       </div>
     </main>
+    <!-- Notification Modal -->
+    <div
+      id="notification-modal"
+      style="
+        display: none;
+        position: fixed;
+        top: 60px;
+        right: 20px;
+        background: white;
+        border: 1px solid #ccc;
+        padding: 15px;
+        width: 300px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+      "
+    >
+      <h4>Notifications</h4>
 
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-</body>
+      {% if incoming_requests %}
+      <strong>Incoming Requests</strong>
+      <ul>
+        {% for req in incoming_requests %}
+        <li>
+          {{ req.from_user.username }} sent you a request.
+          <a href="{% url 'accept_message_request' req.id %}">Accept</a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p>No new incoming requests.</p>
+      {% endif %} {% if accepted_requests %}
+      <strong>Accepted by others</strong>
+      <ul>
+        {% for req in accepted_requests %}
+        <li>
+          {{ req.to_user.username }} accepted your request!
+          <a href="{% url 'private_chat_room' req.to_user.id %}">Chat Now</a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      <button
+        onclick="document.getElementById('notification-modal').style.display='none'"
+      >
+        Close
+      </button>
+    </div>
+    <script>
+      document
+        .getElementById("notification-icon")
+        .addEventListener("click", function (e) {
+          e.preventDefault();
+          const modal = document.getElementById("notification-modal");
+          modal.style.display =
+            modal.style.display === "none" || modal.style.display === ""
+              ? "block"
+              : "none";
+        });
+    </script>
+
+    <!-- JS Scripts -->
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+      crossorigin="anonymous"
+    ></script>
+  </body>
 </html>

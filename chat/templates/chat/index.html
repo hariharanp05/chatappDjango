@@ -1,10 +1,14 @@
-{% extends "chat/base.html" %} {% load crispy_forms_tags %} {% block content %}
+{% extends "chat/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
 <div class="content-section">
+  <!-- 🌐 Public Room Form -->
   <form method="POST">
     {% csrf_token %}
     <fieldset class="form-group">
       <legend class="border-bottom mb-4">
-        🏴‍☠️Ahoy! Enter a room name to join
+        🏴‍☠️ Ahoy! Enter a room name to join
       </legend>
       {{ form|crispy }}
     </fieldset>
@@ -14,5 +18,21 @@
       </button>
     </div>
   </form>
+
+  <hr />
+
+  <!-- ✅ Private Messages Section -->
+  <h4 class="mt-4">📬 Messages</h4>
+  <ul class="list-group">
+    {% for user in private_chat_users %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <a href="{% url 'private_chat_room' user.id %}">
+          {{ user.username }}
+        </a>
+      </li>
+    {% empty %}
+      <li class="list-group-item text-muted">No accepted private messages yet.</li>
+    {% endfor %}
+  </ul>
 </div>
 {% endblock content %}

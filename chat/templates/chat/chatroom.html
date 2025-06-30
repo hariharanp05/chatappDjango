@@ -3,22 +3,22 @@
 <div class="content-section">
     <h3 class="text-center">{{ room_name }}</h3>
 
-    <div id="chat-log-container"
-         class="container bg-light p-3 rounded-sm border rounded overflow-auto"
-         style="height: 480px; overflow-y:auto">
+    <div id="chat-log-container" class="container bg-light p-3 rounded-sm border rounded overflow-auto" style="height: 480px; overflow-y:auto">
         <div id="chat-log">
             {% for m in db_messages %}
             <div class="media content-section">
                 <img class="rounded-circle article-img" src="{{ m.profile_pic|default:'/media/default.jpg' }}" alt="Profile Picture" />
                 <div class="media-body">
                     <div class="article-metadata">
-                        <span class="mr-2">{{ m.username }}</span>
+                        <a class="mr-2 font-weight-bold" href="{% url 'user_profile' m.username %}">
+                          {{ m.username }}
+                        </a>
                     </div>
                     {% if m.message_content %}
-                        <p class="article-content">{{ m.message_content }}</p>
+                      <p class="article-content">{{ m.message_content }}</p>
                     {% endif %}
                     {% if m.file %}
-                        <a href="{{ m.file.url }}" target="_blank">Download File</a>
+                      <a href="{{ m.file.url }}" target="_blank">Download File</a>
                     {% endif %}
                 </div>
             </div>
@@ -27,7 +27,7 @@
     </div>
 
     <br />
-    <input class="form-control" id="chat-message-input" type="text" size="100" placeholder="Type your message here..." />
+    <input class="form-control" id="chat-message-input" type="text" placeholder="Type your message here..." />
     <input type="file" id="chat-file-input" class="form-control" />
     <input class="form-control" id="chat-message-submit" type="button" value="Send" />
 
@@ -41,6 +41,8 @@
         const profilePic = JSON.parse(document.getElementById('profile-pic').textContent);
 
         const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + roomName + '/');
+        {% comment %} const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/private-chat/' + roomId + '/');
+ {% endcomment %}
 
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
@@ -49,17 +51,14 @@
                 html += '<img class="rounded-circle article-img" src="' + (data.profile_pic || '/media/default.jpg') + '" alt="Profile Picture" />';
                 html += '<div class="media-body">';
                 html += '<div class="article-metadata">';
-                html += '<span class="mr-2">' + data.username + '</span>';
+                html += '<strong>' + data.username + '</strong>';
                 html += '</div>';
-
                 if (data.message) {
                     html += '<p class="article-content">' + data.message + '</p>';
                 }
-
                 if (data.file_url) {
                     html += '<a href="' + data.file_url + '" target="_blank">Download File</a>';
                 }
-
                 html += '</div></div>';
                 document.querySelector('#chat-log').innerHTML += html;
 

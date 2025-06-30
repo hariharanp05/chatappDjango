@@ -1,0 +1,19 @@
+{% extends "chat/base.html" %}
+{% block content %}
+<div class="content-section animated fadeIn">
+  <h3>Blocked Users</h3>
+  <ul class="list-group">
+    {% for u in blocked_users %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        {{ u.blocked_user.username }}
+        <form action="{% url 'unblock_user' u.blocked_user.username %}" method="POST">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-secondary btn-sm">Unblock</button>
+        </form>
+      </li>
+    {% empty %}
+      <li class="list-group-item text-muted">No users blocked</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}
