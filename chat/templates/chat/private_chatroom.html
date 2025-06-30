@@ -74,9 +74,9 @@
     outline: none;
   }
 
-  .chat-input-section input[type="file"] {
+  {% comment %} .chat-input-section input[type="file"] {
     display: none;
-  }
+  } {% endcomment %}
 
   .chat-input-section label {
     cursor: pointer;
@@ -134,11 +134,13 @@
         {% if msg.file %}
           <p>
             <a href="{{ msg.file.url }}" target="_blank" style="color: {% if msg.user.id == request.user.id %}lightyellow{% else %}blue{% endif %};">
-              download Now{% comment %} {{ msg.file.name|cut:"uploads/" }} {% endcomment %}
+              Download Now{% comment %} download Now{{ msg.file.name}} {% endcomment %}
             </a>
           </p>
         {% endif %}
-        <small style="opacity: 0.7;">{{ msg.timestamp|date:"H:i" }}</small>
+        <small style="opacity: 0.7;">
+  {{ msg.sender.username }} • {{ msg.timestamp|date:"H:i" }}
+</small>
       </div>
     {% endfor %}
   </div>
