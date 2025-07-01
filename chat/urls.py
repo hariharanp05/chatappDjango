@@ -14,7 +14,7 @@ urlpatterns = [
     path('user/<str:username>/', chat_views.user_profile, name='user_profile'),
 
     # Private Messaging (Direct Messages)
-    path('direct-messages/', chat_views.direct_messages, name='direct_messages'),
+    #path('direct-messages/', chat_views.direct_messages, name='direct_messages'),
     path('private-chat/<int:user_id>/', chat_views.private_chat_room, name='private_chat_room'),
 
     # Message Requests
@@ -25,5 +25,5 @@ urlpatterns = [
     # Block/Unblock Users
     path('block/<int:user_id>/', chat_views.block_user, name='block_user'),
     path('unblock/<int:user_id>/', chat_views.unblock_user, name='unblock_user'),
-    path('blocked-users/', chat_views.blocked_users, name='blocked_users'),
+    #path('blocked-users/', chat_views.blocked_users, name='blocked_users'),
 ]

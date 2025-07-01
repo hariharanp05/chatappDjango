@@ -124,7 +124,10 @@
 <div class="chat-container">
   <div class="chat-header">
     {% comment %} <img src="{{ other_user.profile.profile_picture.url }}" alt="Avatar" width="35" height="35" style="border-radius: 50%;"> {% endcomment %}
-    Chat with {{ other_user.username }}
+    <a href="{% url 'user_profile' other_user.username %}">
+  Chat with {{ other_user.username }}
+</a>
+
   </div>
 
   <div id="chat-log" class="chat-messages">

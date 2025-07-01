@@ -50,14 +50,18 @@ def chat_home(request):
                 is_read=False
             ).exists()
 
-        # Dynamically attach attribute
         other_user.has_unread = has_unread
         private_chat_users.append(other_user)
+
+    # ✅ Add this line for the popup modal
+    blocked_users = BlockedUser.objects.filter(blocker=request.user).select_related('blocked')
 
     return render(request, 'chat/index.html', {
         'form': form,
         'private_chat_users': private_chat_users,
+        'blocked_users': [entry.blocked for entry in blocked_users],  # Just list of User objects
     })
+
 
 @login_required
 def chat_room(request, room_name):
@@ -122,22 +126,22 @@ def block_user(request, user_id):
     if blocked_user != request.user:
         BlockedUser.objects.get_or_create(blocker=request.user, blocked=blocked_user)
         messages.success(request, f"Blocked {blocked_user.username}")
-    return redirect('direct_messages')
+    return redirect('chat-home')
 
 @login_required
 def unblock_user(request, user_id):
     blocked_user = get_object_or_404(User, id=user_id)
     BlockedUser.objects.filter(blocker=request.user, blocked=blocked_user).delete()
     messages.success(request, f"Unblocked {blocked_user.username}")
-    return redirect('blocked_users')
+    return redirect('chat-home')
 
 # DIRECT MESSAGES
 
-@login_required
-def direct_messages(request):
-    rooms = DirectMessageRoom.objects.filter(Q(user1=request.user) | Q(user2=request.user))
-    contacts = [room.user2 if room.user1 == request.user else room.user1 for room in rooms]
-    return render(request, 'chat/direct_messages.html', {'contacts': contacts})
+# @login_required
+# def direct_messages(request):
+#     rooms = DirectMessageRoom.objects.filter(Q(user1=request.user) | Q(user2=request.user))
+#     contacts = [room.user2 if room.user1 == request.user else room.user1 for room in rooms]
+#     return render(request, 'chat/direct_messages.html', {'contacts': contacts})
 
 @login_required
 def private_chat_room(request, user_id):
@@ -145,7 +149,7 @@ def private_chat_room(request, user_id):
 
     if BlockedUser.objects.filter(blocker=other_user, blocked=request.user).exists():
         messages.error(request, "You are blocked by this user.")
-        return redirect('chat_home')
+        return redirect('chat-home')
 
     accepted = MessageRequest.objects.filter(
         Q(from_user=request.user, to_user=other_user) |
@@ -227,10 +231,10 @@ def notifications(request):
 
 # BLOCKED USERS LIST
 
-@login_required
-def blocked_users(request):
-    blocked = BlockedUser.objects.filter(blocker=request.user)
-    return render(request, 'chat/blocked_users.html', {'blocked_users': blocked})
+# @login_required
+# def blocked_users(request):
+#     blocked = BlockedUser.objects.filter(blocker=request.user)
+#     return render(request, 'chat/index.html', {'blocked_users': blocked})
 
 
 @login_required

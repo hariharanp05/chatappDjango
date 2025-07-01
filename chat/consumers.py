@@ -8,7 +8,7 @@ from channels.db import database_sync_to_async
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Q
-from .models import Message, DirectMessage, DirectMessageRoom
+from .models import Message, DirectMessage, DirectMessageRoom, BlockedUser
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -114,6 +114,29 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
             profile_pic = data.get('profile_pic', '')
             file_info = data.get('file')
 
+            # 🔒 BLOCK CHECK SECTION
+            parts = room_name.split('_')
+            if len(parts) != 3 or parts[0] != 'dm':
+                print(f"[Room Error] Invalid room format: {room_name}")
+                return
+
+            uid1, uid2 = int(parts[1]), int(parts[2])
+            user1 = await database_sync_to_async(User.objects.get)(id=uid1)
+            user2 = await database_sync_to_async(User.objects.get)(id=uid2)
+            sender = await database_sync_to_async(User.objects.get)(username=username)
+            receiver = user2 if sender == user1 else user1
+
+            is_blocked = await database_sync_to_async(
+                lambda: BlockedUser.objects.filter(blocker=receiver, blocked=sender).exists()
+            )()
+
+            if is_blocked:
+                await self.send(text_data=json.dumps({
+                    'error': 'You are blocked by this user.'
+                }))
+                return
+            # 🔒 END BLOCK CHECK
+
             file_url = await self.save_file(file_info) if file_info else None
             timestamp = datetime.now().strftime('%H:%M')
 
@@ -169,7 +192,6 @@ class PrivateChatConsumer(AsyncWebsocketConsumer):
         try:
             user = User.objects.get(username=username)
 
-            # Validate room name format: "dm_<user1_id>_<user2_id>"
             parts = room_name.split('_')
             if len(parts) != 3 or parts[0] != 'dm':
                 print(f"[Room Error] Invalid room format: {room_name}")
