@@ -2,159 +2,33 @@
 {% load static %}
 
 {% block content %}
-<style>
-  .chat-container {
-    max-width: 800px;
-    margin: auto;
-    height: 85vh;
-    display: flex;
-    flex-direction: column;
-    border-radius: 10px;
-    background: #fdfdfd;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    animation: fadeInUp 0.5s ease;
-  }
+ 
 
-  .chat-header {
-    background: #006eff;
-    color: white;
-    padding: 15px;
-    font-size: 20px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .chat-messages {
-    flex: 1;
-    padding: 15px;
-    overflow-y: auto;
-    background: #f0f4f8;
-    scroll-behavior: smooth;
-  }
-
-  .message {
-    margin-bottom: 15px;
-    padding: 10px 15px;
-    border-radius: 15px;
-    max-width: 70%;
-    position: relative;
-    animation: slideIn 0.3s ease;
-  }
-
-  .message.sender {
-    background: #006eff;
-    color: white;
-    align-self: flex-end;
-    border-bottom-right-radius: 0;
-  }
-
-  .message.receiver {
-    background: #e4e4e4;
-    color: black;
-    align-self: flex-start;
-    border-bottom-left-radius: 0;
-  }
-
-  .chat-input-section {
-    display: flex;
-    padding: 10px;
-    background: white;
-    border-top: 1px solid #ccc;
-  }
-
-  .chat-input-section input[type="text"] {
-    flex: 1;
-    padding: 10px;
-    border-radius: 20px;
-    border: 1px solid #ccc;
-    margin-right: 10px;
-    outline: none;
-  }
-
-  {% comment %} .chat-input-section input[type="file"] {
-    display: none;
-  } {% endcomment %}
-
-  .chat-input-section label {
-    cursor: pointer;
-    font-size: 20px;
-    margin-right: 8px;
-    color: #333;
-  }
-
-  .chat-input-section button {
-    background: #006eff;
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 20px;
-    transition: background 0.3s ease;
-  }
-
-  .chat-input-section button:hover {
-    background: #004dbf;
-  }
-
-  @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-</style>
-
-<div class="chat-container">
-  <div class="chat-header">
-    {% comment %} <img src="{{ other_user.profile.profile_picture.url }}" alt="Avatar" width="35" height="35" style="border-radius: 50%;"> {% endcomment %}
-    <a href="{% url 'user_profile' other_user.username %}">
-  Chat with {{ other_user.username }}
-</a>
-
+<div class="private-chat-container">
+  <div class="private-chat-header">
+    <a href="{% url 'user_profile' other_user.username %}">Chat with {{ other_user.username }}</a>
   </div>
 
-  <div id="chat-log" class="chat-messages">
+  <div id="chat-log" class="private-chat-messages">
     {% for msg in db_messages %}
-      <div class="message {% if msg.user.id == request.user.id %}sender{% else %}receiver{% endif %}">
-        <p style="margin: 0;">{{ msg.message_content }}</p>
+      <div class="private-message {% if msg.user.id == request.user.id %}sender{% else %}receiver{% endif %}">
+        <p>{{ msg.message_content }}</p>
         {% if msg.file %}
-          <p>
-            <a href="{{ msg.file.url }}" target="_blank" style="color: {% if msg.user.id == request.user.id %}lightyellow{% else %}blue{% endif %};">
-              Download Now{% comment %} download Now{{ msg.file.name}} {% endcomment %}
-            </a>
-          </p>
+          <p><a href="{{ msg.file.url }}" target="_blank">📎 Download</a></p>
         {% endif %}
-        <small style="opacity: 0.7;">
-  {{ msg.sender.username }} • {{ msg.timestamp|date:"H:i" }}
-</small>
+        <small>{{ msg.sender.username }} • {{ msg.timestamp|date:"H:i" }}</small>
       </div>
     {% endfor %}
   </div>
 
-  <div class="chat-input-section">
-    <input type="text" id="chat-message-input" placeholder="Type a message...">
+  <div class="private-chat-input-section">
+    <input type="text" id="chat-message-input" placeholder="Type a message..." autocomplete="off">
     <label for="file-upload" title="Attach a file">📎</label>
     <input type="file" id="file-upload" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar">
     <button id="chat-message-submit">Send</button>
   </div>
 </div>
+
 
 <!-- Hidden data for JavaScript -->
 {{ room_name|json_script:"room-name" }}
@@ -175,7 +49,7 @@
     const chatLog = document.getElementById("chat-log");
 
     const msgDiv = document.createElement("div");
-    msgDiv.classList.add("message");
+    msgDiv.classList.add("private-message");
     msgDiv.classList.add(data.username === userName ? "sender" : "receiver");
 
     msgDiv.innerHTML = `<p>${data.message}</p>`;

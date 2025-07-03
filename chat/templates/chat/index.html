@@ -2,29 +2,43 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-<div class="content-section">
+<div class="content-section animate__animated animate__fadeIn">
   <!-- 🌐 Public Room Form -->
   <form method="POST">
     {% csrf_token %}
     <fieldset class="form-group">
-      <legend class="border-bottom mb-4">
+      <legend class="border-bottom mb-4 text-info neon-title">
         🏴‍☠️ Ahoy! Enter a room name to join
       </legend>
       {{ form|crispy }}
     </fieldset>
-    <div class="form-group">
-      <button class="btn btn-outline-info" type="submit">
+    <div class="form-group text-center">
+      <button class="btn btn-outline-info neon-btn" type="submit">
         Start Blabbering 🦜!
       </button>
     </div>
   </form>
 
-  <hr />
+  <hr class="glow-line" />
 
-  <!-- ✅ Private Messages Section -->
-  <input type="text" id="user-search" placeholder="Search users..." autocomplete="off">
-<div id="search-results" style="border: 1px solid #ccc; display:none; max-height: 200px; overflow-y: auto;"></div>
+  <!-- 🔎 Private Messages Section -->
+  <div class="mt-4">
+    <input
+      type="text"
+      id="user-search"
+      class="form-control neon-input"
+      placeholder="🚀 Search users across the galaxy..."
+      autocomplete="off"
+    />
+    <div
+      id="search-results"
+      class="content-section mt-2"
+      style="display:none; max-height: 200px; overflow-y: auto;"
+    ></div>
+  </div>
+</div>
 
+<!-- 🔍 User Search AJAX Script -->
 <script>
 document.getElementById("user-search").addEventListener("keyup", function () {
     let query = this.value;
@@ -41,8 +55,7 @@ document.getElementById("user-search").addEventListener("keyup", function () {
                 let a = document.createElement("a");
                 a.href = `/user/${user.username}/`;
                 a.textContent = user.username;
-                a.style.display = "block";
-                a.style.padding = "5px";
+                a.className = "d-block px-3 py-2 search-result-link";
                 resultsDiv.appendChild(a);
             });
         });
@@ -52,6 +65,4 @@ document.getElementById("user-search").addEventListener("keyup", function () {
     }
 });
 </script>
-
-
 {% endblock content %}
