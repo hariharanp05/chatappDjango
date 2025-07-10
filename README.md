@@ -35,7 +35,7 @@ YourSpace is a real-time, space-themed chat application built with Django and Dj
    ```bash
    python -m venv env
    source env/bin/activate  # For Linux/macOS
-   env\scripts\activate     # For Windows
+   env/scripts/activate     # For Windows
    ```
 
 3. Install dependencies:
